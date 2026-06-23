@@ -1,93 +1,128 @@
 """
-Train and save the ML model from a real dataset.
+Train the ML model from a CSV dataset and save model.pkl + metrics.json.
 
 Usage:
+    cd backend
     python train.py
 
-Expects: backend/data/sqli_dataset.csv  (columns: Query, Label)
-Outputs: model.pkl, metrics.json
+Expected CSV: data/sqli_dataset.csv
+  - Text column : "Query" or "Sentence"
+  - Label column: "Label"  (0 = safe, 1 = malicious)
 """
+
 import json
+import os
 import pickle
-from pathlib import Path
 
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
-    accuracy_score, classification_report, confusion_matrix,
-    f1_score, precision_score, recall_score,
+    classification_report,
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    recall_score,
+    accuracy_score,
 )
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 
-# ── load data ─────────────────────────────────────────────────────────────
+CSV_PATH     = os.path.join(os.path.dirname(__file__), "data", "sqli_dataset.csv")
+MODEL_PATH   = os.path.join(os.path.dirname(__file__), "model.pkl")
+METRICS_PATH = os.path.join(os.path.dirname(__file__), "metrics.json")
 
-CSV_PATH = Path(__file__).parent / "data" / "sqli_dataset.csv"
 
-if not CSV_PATH.exists():
-    raise FileNotFoundError(f"Dataset not found: {CSV_PATH}")
+# ── 1. Load dataset ────────────────────────────────────────────────────────
 
-df = pd.read_csv(CSV_PATH)
+print(f"Loading {CSV_PATH} ...")
+df = pd.read_csv(CSV_PATH, encoding="utf-8")
 
-# Normalise column names — handle minor variations in the CSV header
-df.columns = df.columns.str.strip()
-if "Query" not in df.columns or "Label" not in df.columns:
-    raise ValueError(f"Expected columns 'Query' and 'Label'. Found: {list(df.columns)}")
+# Auto-detect text column ("Query" per user spec; "Sentence" in SQLiV3.csv from Kaggle)
+if "Query" in df.columns:
+    text_col = "Query"
+elif "Sentence" in df.columns:
+    text_col = "Sentence"
+else:
+    raise ValueError(f"No text column found. Got: {list(df.columns)}")
 
-df = df.dropna(subset=["Query", "Label"])
+print(f"  Text column : '{text_col}'")
+print(f"  Rows before cleaning: {len(df)}")
+
+df = df[[text_col, "Label"]].dropna()
+df["Label"] = df["Label"].astype(str).str.strip()
+df = df[df["Label"].isin(["0", "1"])]
 df["Label"] = df["Label"].astype(int)
+df[text_col] = df[text_col].astype(str)
 
-X = df["Query"].astype(str).tolist()
+print(f"  Rows after cleaning : {len(df)}")
+print(f"  Label distribution  : {df['Label'].value_counts().to_dict()}")
+
+X = df[text_col].tolist()
 y = df["Label"].tolist()
 
-print(f"Dataset: {len(X)} samples  |  malicious={sum(y)}  normal={len(y)-sum(y)}")
 
-# ── split ──────────────────────────────────────────────────────────────────
+# ── 2. Train / test split ──────────────────────────────────────────────────
 
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42, stratify=y
+    X, y, test_size=0.20, random_state=42, stratify=y
 )
+print(f"\nTrain: {len(X_train)}  |  Test: {len(X_test)}")
 
-# ── train ──────────────────────────────────────────────────────────────────
+
+# ── 3. Build and train pipeline ────────────────────────────────────────────
 
 model = Pipeline([
-    ("tfidf", TfidfVectorizer(analyzer="char_wb", ngram_range=(2, 5), max_features=10000)),
-    ("clf",   LogisticRegression(C=5.0, max_iter=1000, class_weight="balanced")),
+    ("tfidf", TfidfVectorizer(
+        analyzer="char_wb",
+        ngram_range=(2, 5),
+        max_features=8000,
+        sublinear_tf=True,
+    )),
+    ("clf", LogisticRegression(C=5.0, max_iter=1000, n_jobs=-1)),
 ])
 
+print("Training ...")
 model.fit(X_train, y_train)
-y_pred = model.predict(y_test if False else X_test)   # X_test
 
-# ── metrics ────────────────────────────────────────────────────────────────
 
-acc  = accuracy_score(y_test, y_pred)
-prec = precision_score(y_test, y_pred)
-rec  = recall_score(y_test, y_pred)
-f1   = f1_score(y_test, y_pred)
+# ── 4. Evaluate ────────────────────────────────────────────────────────────
+
+y_pred = model.predict(X_test)
+
+acc  = round(accuracy_score(y_test, y_pred)  * 100, 2)
+prec = round(precision_score(y_test, y_pred) * 100, 2)
+rec  = round(recall_score(y_test, y_pred)    * 100, 2)
+f1   = round(f1_score(y_test, y_pred)        * 100, 2)
 cm   = confusion_matrix(y_test, y_pred).tolist()
 
-report = classification_report(y_test, y_pred, target_names=["normal", "malicious"])
-print("\n" + report)
-print(f"Confusion matrix:\n  TN={cm[0][0]}  FP={cm[0][1]}\n  FN={cm[1][0]}  TP={cm[1][1]}\n")
+print("\n" + classification_report(y_test, y_pred, target_names=["normal", "malicious"]))
+print("Confusion matrix (rows=actual, cols=predicted):")
+print(f"  TN={cm[0][0]}  FP={cm[0][1]}")
+print(f"  FN={cm[1][0]}  TP={cm[1][1]}")
+
+
+# ── 5. Save model + metrics ────────────────────────────────────────────────
+
+with open(MODEL_PATH, "wb") as f:
+    pickle.dump(model, f)
+print(f"\nSaved model   → {MODEL_PATH}")
 
 metrics = {
-    "train_samples": len(X_train),
-    "test_samples":  len(X_test),
-    "accuracy":      round(acc,  4),
-    "precision":     round(prec, 4),
-    "recall":        round(rec,  4),
-    "f1":            round(f1,   4),
-    "confusion_matrix": {"TN": cm[0][0], "FP": cm[0][1], "FN": cm[1][0], "TP": cm[1][1]},
+    "dataset_rows": len(df),
+    "train_size":   len(X_train),
+    "test_size":    len(X_test),
+    "accuracy":     acc,
+    "precision":    prec,
+    "recall":       rec,
+    "f1":           f1,
+    "confusion_matrix": {
+        "TN": cm[0][0], "FP": cm[0][1],
+        "FN": cm[1][0], "TP": cm[1][1],
+    },
 }
 
-metrics_path = Path(__file__).parent / "metrics.json"
-metrics_path.write_text(json.dumps(metrics, indent=2))
-print(f"Metrics saved → {metrics_path}")
-
-# ── save model ─────────────────────────────────────────────────────────────
-
-model_path = Path(__file__).parent / "model.pkl"
-with open(model_path, "wb") as f:
-    pickle.dump(model, f)
-print(f"Model saved  → {model_path}")
+with open(METRICS_PATH, "w") as f:
+    json.dump(metrics, f, indent=2)
+print(f"Saved metrics → {METRICS_PATH}")
+print(f"\nAccuracy={acc}%  Precision={prec}%  Recall={rec}%  F1={f1}%")

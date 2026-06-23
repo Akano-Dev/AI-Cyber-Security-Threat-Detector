@@ -2,3 +2,5 @@ fastapi
 uvicorn[standard]
 scikit-learn
 pandas
+httpx
+python-dotenv

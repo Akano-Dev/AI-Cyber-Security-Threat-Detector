@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ACSTD — Project Documentation</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #ffffff;
+      --surface:   #f8fafc;
+      --border:    #e2e8f0;
+      --text:      #0f172a;
+      --muted:     #64748b;
+      --accent:    #0891b2;
+      --accent-bg: #ecfeff;
+      --red:       #dc2626;
+      --red-bg:    #fef2f2;
+      --green:     #16a34a;
+      --green-bg:  #f0fdf4;
+      --amber:     #d97706;
+      --amber-bg:  #fffbeb;
+      --purple:    #7c3aed;
+      --purple-bg: #f5f3ff;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text);
+      background: var(--bg);
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 40px;
+    }
+
+    /* ── Cover ── */
+    .cover {
+      text-align: center;
+      padding: 60px 0 80px;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 60px;
+    }
+    .cover-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-bg);
+      color: var(--accent);
+      border: 1px solid #a5f3fc;
+      border-radius: 999px;
+      padding: 6px 18px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .cover h1 {
+      font-size: 52px;
+      font-weight: 800;
+      letter-spacing: -.03em;
+      color: var(--text);
+      line-height: 1.1;
+      margin-bottom: 12px;
+    }
+    .cover h1 span { color: var(--accent); }
+    .cover .subtitle {
+      font-size: 18px;
+      color: var(--muted);
+      font-weight: 400;
+      margin-bottom: 36px;
+    }
+    .cover-meta {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    .cover-meta div { font-size: 13px; color: var(--muted); }
+    .cover-meta strong { color: var(--text); font-weight: 600; display: block; }
+
+    /* ── TOC ── */
+    .toc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 36px;
+      margin-bottom: 60px;
+    }
+    .toc h2 { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 20px; }
+    .toc ol { list-style: none; counter-reset: toc; }
+    .toc ol li { counter-increment: toc; padding: 5px 0; border-bottom: 1px dashed var(--border); display: flex; align-items: baseline; gap: 10px; }
+    .toc ol li:last-child { border-bottom: none; }
+    .toc ol li::before { content: counter(toc, decimal-leading-zero); font-size: 11px; font-weight: 700; color: var(--accent); font-family: 'JetBrains Mono', monospace; min-width: 24px; }
+    .toc a { color: var(--text); text-decoration: none; font-weight: 500; font-size: 14px; }
+    .toc .pg { margin-left: auto; font-size: 12px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+    /* ── Sections ── */
+    section { margin-bottom: 56px; }
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    h2.section-title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      color: var(--text);
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--border);
+    }
+    h3 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 28px 0 10px;
+    }
+    h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 20px 0 8px;
+    }
+    p { margin-bottom: 14px; color: #334155; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin: 16px 0;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin: 20px 0;
+    }
+    .card-sm {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+    }
+    .card-sm .card-icon { font-size: 22px; margin-bottom: 8px; }
+    .card-sm h4 { margin: 0 0 4px; font-size: 13px; }
+    .card-sm p { font-size: 12px; color: var(--muted); margin: 0; }
+
+    /* ── Code ── */
+    pre, code {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+    code {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 1px 6px;
+      font-size: 12.5px;
+      color: var(--accent);
+    }
+    pre {
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 12px;
+      padding: 20px 24px;
+      font-size: 12.5px;
+      line-height: 1.7;
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+    pre code { background: none; border: none; padding: 0; color: inherit; font-size: inherit; }
+    .comment { color: #475569; }
+    .kw  { color: #93c5fd; }
+    .str { color: #86efac; }
+    .fn  { color: #fcd34d; }
+    .num { color: #f9a8d4; }
+
+    /* ── Tables ── */
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+    th { background: var(--surface); font-weight: 600; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; padding: 10px 14px; text-align: left; border-bottom: 2px solid var(--border); color: var(--muted); }
+    td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .04em;
+    }
+    .badge-red    { background: var(--red-bg);    color: var(--red);    border: 1px solid #fecaca; }
+    .badge-amber  { background: var(--amber-bg);  color: var(--amber);  border: 1px solid #fde68a; }
+    .badge-green  { background: var(--green-bg);  color: var(--green);  border: 1px solid #bbf7d0; }
+    .badge-blue   { background: var(--accent-bg); color: var(--accent); border: 1px solid #a5f3fc; }
+    .badge-purple { background: var(--purple-bg); color: var(--purple); border: 1px solid #ddd6fe; }
+
+    /* ── Callouts ── */
+    .callout {
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 16px 0;
+      font-size: 13.5px;
+      display: flex;
+      gap: 12px;
+    }
+    .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .callout-blue   { background: var(--accent-bg); border-left: 3px solid var(--accent); }
+    .callout-red    { background: var(--red-bg);    border-left: 3px solid var(--red); }
+    .callout-green  { background: var(--green-bg);  border-left: 3px solid var(--green); }
+    .callout-amber  { background: var(--amber-bg);  border-left: 3px solid var(--amber); }
+
+    /* ── Flow diagram ── */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
+    .flow-box {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      text-align: center;
+      min-width: 110px;
+    }
+    .flow-arrow {
+      font-size: 18px;
+      color: var(--accent);
+      padding: 0 6px;
+      font-weight: 700;
+    }
+    .flow-box.threat { border-color: #fca5a5; background: var(--red-bg); color: var(--red); }
+    .flow-box.safe   { border-color: #86efac; background: var(--green-bg); color: var(--green); }
+    .flow-box.accent { border-color: #a5f3fc; background: var(--accent-bg); color: var(--accent); }
+
+    /* ── File tree ── */
+    .tree { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.9; color: #334155; }
+    .tree .dir  { color: var(--accent); font-weight: 600; }
+    .tree .file { color: #475569; }
+    .tree .note { color: #94a3b8; }
+
+    /* ── List ── */
+    ul, ol { padding-left: 20px; margin: 10px 0; }
+    li { margin-bottom: 6px; }
+
+    /* ── Divider ── */
+    hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+    /* ── Page break for PDF ── */
+    .page-break { page-break-after: always; }
+
+    /* ── Print ── */
+    @media print {
+      body { padding: 0; max-width: 100%; }
+      .toc a::after { content: ""; }
+      pre { white-space: pre-wrap; word-break: break-all; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════ COVER ══════════════════════ -->
+<div class="cover">
+  <div class="cover-badge">🛡 Project Documentation</div>
+  <h1><span>ACSTD</span></h1>
+  <p class="subtitle">AI Cyber Security Threat Detector<br>A real-time, AI-powered security monitoring & proxy system</p>
+  <div class="cover-meta">
+    <div><strong>Type</strong>Full-Stack Web Application</div>
+    <div><strong>Backend</strong>Python · FastAPI</div>
+    <div><strong>Frontend</strong>React · Vite · Tailwind CSS</div>
+    <div><strong>AI/ML</strong>scikit-learn</div>
+    <div><strong>Database</strong>SQLite</div>
+    <div><strong>Realtime</strong>WebSockets</div>
+  </div>
+</div>
+
+<!-- ══════════════════════ TOC ══════════════════════ -->
+<div class="toc">
+  <h2>Table of Contents</h2>
+  <ol>
+    <li><a href="#overview">Project Overview</a></li>
+    <li><a href="#architecture">System Architecture</a></li>
+    <li><a href="#tech">Technology Stack</a></li>
+    <li><a href="#structure">Project File Structure</a></li>
+    <li><a href="#backend">Backend — How It Works</a></li>
+    <li><a href="#detection">Detection Engine (Rules + AI)</a></li>
+    <li><a href="#ml">Machine Learning Model</a></li>
+    <li><a href="#proxy">Reverse Proxy System</a></li>
+    <li><a href="#ratelimit">Rate Limiting & Auto-Block</a></li>
+    <li><a href="#api">API Endpoints Reference</a></li>
+    <li><a href="#frontend">Frontend Dashboard</a></li>
+    <li><a href="#database">Database Schema</a></li>
+    <li><a href="#howtorun">How to Run the Project</a></li>
+    <li><a href="#flow">End-to-End Request Flow</a></li>
+    <li><a href="#threats">Threat Types Detected</a></li>
+  </ol>
+</div>
+
+<div class="page-break"></div>
+
+<!-- ══════════════════════ 1. OVERVIEW ══════════════════════ -->
+<section id="overview">
+  <p class="section-label">Section 01</p>
+  <h2 class="section-title">Project Overview</h2>
+
+  <p>
+    ACSTD (AI Cyber Security Threat Detector) is a full-stack web application built as a security monitoring
+    dashboard. It inspects incoming HTTP traffic, classifies requests as safe or malicious using a combination
+    of rule-based detection and a trained machine learning model, and gives a security operator a live dashboard
+    to monitor, block, or ignore threats in real time.
+  </p>
+
+  <div class="callout callout-blue">
+    <span class="callout-icon">💡</span>
+    <span>Think of ACSTD as a security guard that reads every request before it reaches your website. If a request looks like an attack, it raises an alarm on the dashboard and blocks it. Safe requests pass through to the real site without the visitor noticing anything.</span>
+  </div>
+
+  <h3>What Problem Does It Solve?</h3>
+  <p>
+    Most small websites and businesses cannot afford enterprise security tools. A single successful attack —
+    SQL Injection, Cross-Site Scripting, or a brute-force login attempt — can expose user data, deface a
+    website, or take down a service entirely. ACSTD provides:
+  </p>
+  <ul>
+    <li>Real-time detection of the most common web attack types</li>
+    <li>A live, visual dashboard that any non-technical team member can understand</li>
+    <li>One-click IP blocking that persists across server restarts</li>
+    <li>A reverse proxy mode that protects any existing website without code changes</li>
+    <li>Automatic brute-force detection and blocking</li>
+  </ul>
+
+  <div class="card-grid">
+    <div class="card-sm"><div class="card-icon">🔍</div><h4>Detect</h4><p>Inspect every HTTP request using regex rules and a trained ML model</p></div>
+    <div class="card-sm"><div class="card-icon">📊</div><h4>Monitor</h4><p>Live dashboard with real-time threat feed, charts, and stats</p></div>
+    <div class="card-sm"><div class="card-icon">🚫</div><h4>Block</h4><p>One-click IP blocking, persisted to the database</p></div>
+    <div class="card-sm"><div class="card-icon">🛡</div><h4>Protect</h4><p>Reverse proxy mode sits in front of any real website</p></div>
+  </div>
+</section>
+
+<!-- ══════════════════════ 2. ARCHITECTURE ══════════════════════ -->
+<section id="architecture">
+  <p class="section-label">Section 02</p>
+  <h2 class="section-title">System Architecture</h2>
+
+  <p>ACSTD has two distinct operating modes:</p>
+
+  <h3>Mode 1 — Standalone Analyzer</h3>
+  <p>
+    Any application sends a POST request to ACSTD's <code>/analyze</code> endpoint. ACSTD classifies the
+    payload and returns a verdict (<code>safe</code>, <code>threat</code>, or <code>blocked</code>).
+    The calling application decides what to do next.
+  </p>
+
+  <div class="flow">
+    <div class="flow-box">Client App</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box accent">POST /analyze</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Detection Engine + ML</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Verdict JSON</div>
+  </div>
+
+  <h3>Mode 2 — Reverse Proxy (Real Protection)</h3>
+  <p>
+    All user traffic is routed through ACSTD's <code>/proxy</code> endpoint first. Threats are blocked
+    and shown on the dashboard. Clean requests are transparently forwarded to the real target website.
+    The end-user never knows ACSTD is there.
+  </p>
+
+  <div class="flow">
+    <div class="flow-box">User Browser</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box accent">ACSTD /proxy</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Inspect</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box threat">BLOCK (403)</div>
+  </div>
+  <div class="flow" style="margin-top:8px">
+    <div class="flow-box" style="visibility:hidden">User Browser</div>
+    <div class="flow-arrow" style="visibility:hidden">→</div>
+    <div class="flow-box" style="visibility:hidden">ACSTD</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Inspect</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box safe">Forward to real site ✓</div>
+  </div>
+
+  <h3>Component Map</h3>
+  <table>
+    <thead><tr><th>Component</th><th>Technology</th><th>Role</th></tr></thead>
+    <tbody>
+      <tr><td><strong>API Server</strong></td><td>FastAPI (Python)</td><td>Handles all HTTP requests, WebSocket connections, and business logic</td></tr>
+      <tr><td><strong>Detection Engine</strong></td><td>Python (regex)</td><td>Matches payloads against known attack signatures</td></tr>
+      <tr><td><strong>ML Model</strong></td><td>scikit-learn</td><td>TF-IDF + Logistic Regression trained on 30,000 real SQL injection samples</td></tr>
+      <tr><td><strong>Database</strong></td><td>SQLite</td><td>Persists threat log and blocked IP list</td></tr>
+      <tr><td><strong>WebSocket</strong></td><td>FastAPI WS</td><td>Pushes new threats to the dashboard in real time</td></tr>
+      <tr><td><strong>Proxy Layer</strong></td><td>httpx (async)</td><td>Forwards safe requests to the protected target site</td></tr>
+      <tr><td><strong>Dashboard</strong></td><td>React + Vite</td><td>Live monitoring UI with charts, filters, and controls</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ══════════════════════ 3. TECH STACK ══════════════════════ -->
+<section id="tech">
+  <p class="section-label">Section 03</p>
+  <h2 class="section-title">Technology Stack</h2>
+
+  <h3>Backend</h3>
+  <table>
+    <thead><tr><th>Library / Tool</th><th>Version</th><th>Why It Was Used</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Python</strong></td><td>3.11+</td><td>Main backend language. Excellent ecosystem for both web APIs and ML.</td></tr>
+      <tr><td><strong>FastAPI</strong></td><td>latest</td><td>Modern async web framework. Auto-generates API docs, supports WebSockets natively, very fast.</td></tr>
+      <tr><td><strong>Uvicorn</strong></td><td>latest</td><td>ASGI server that runs FastAPI. Handles async I/O efficiently.</td></tr>
+      <tr><td><strong>SQLite</strong></td><td>built-in</td><td>Zero-setup database. Perfect for a demo/single-server project. No installation needed.</td></tr>
+      <tr><td><strong>scikit-learn</strong></td><td>latest</td><td>Industry-standard ML library. Used for TF-IDF vectorizer and Logistic Regression classifier.</td></tr>
+      <tr><td><strong>pandas</strong></td><td>latest</td><td>Used only during model training to load and clean the CSV dataset.</td></tr>
+      <tr><td><strong>httpx</strong></td><td>latest</td><td>Async HTTP client for forwarding proxy requests to the target site.</td></tr>
+      <tr><td><strong>python-dotenv</strong></td><td>latest</td><td>Loads <code>.env</code> configuration file into environment variables.</td></tr>
+      <tr><td><strong>pydantic</strong></td><td>v2</td><td>Request/response data validation (built into FastAPI).</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Frontend</h3>
+  <table>
+    <thead><tr><th>Library / Tool</th><th>Why It Was Used</th></tr></thead>
+    <tbody>
+      <tr><td><strong>React 18</strong></td><td>Component-based UI. State management with hooks (<code>useState</code>, <code>useEffect</code>, <code>useMemo</code>).</td></tr>
+      <tr><td><strong>Vite</strong></td><td>Extremely fast development server and build tool. Hot module replacement.</td></tr>
+      <tr><td><strong>Tailwind CSS v3</strong></td><td>Utility-first CSS. Dark mode via <code>darkMode: "class"</code>. No custom CSS needed for layout.</td></tr>
+      <tr><td><strong>Framer Motion</strong></td><td>Declarative animations. Used for row slide-in, count-up numbers, button press feedback, skeleton loaders.</td></tr>
+      <tr><td><strong>Recharts</strong></td><td>React charting library. Renders the horizontal bar chart of threat types.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Communication Protocols</h3>
+  <table>
+    <thead><tr><th>Protocol</th><th>Used For</th></tr></thead>
+    <tbody>
+      <tr><td><strong>REST (HTTP/JSON)</strong></td><td>All standard API calls — fetch threats, analyze payload, block/ignore, export, config</td></tr>
+      <tr><td><strong>WebSocket (ws://)</strong></td><td>Real-time push from server to dashboard — new threats appear instantly without page refresh</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══════════════════════ 4. FILE STRUCTURE ══════════════════════ -->
+<section id="structure">
+  <p class="section-label">Section 04</p>
+  <h2 class="section-title">Project File Structure</h2>
+
+  <div class="card">
+    <div class="tree">
+<span class="dir">ACSTD/</span><br>
+├── <span class="dir">backend/</span><br>
+│   ├── <span class="file">main.py</span>          <span class="note"># FastAPI app — all endpoints, WebSocket, proxy logic</span><br>
+│   ├── <span class="file">database.py</span>      <span class="note"># SQLite init, blocked IP persistence helpers</span><br>
+│   ├── <span class="file">detection.py</span>     <span class="note"># Regex-based threat signature rules</span><br>
+│   ├── <span class="file">ml_model.py</span>      <span class="note"># Loads model.pkl, exposes predict() function</span><br>
+│   ├── <span class="file">train.py</span>         <span class="note"># One-time script to train and save the ML model</span><br>
+│   ├── <span class="file">seed.py</span>          <span class="note"># Inserts 8 sample threats for demo purposes</span><br>
+│   ├── <span class="file">simulate_traffic.py</span> <span class="note"># Sends fake traffic to /analyze for demo</span><br>
+│   ├── <span class="file">model.pkl</span>        <span class="note"># Trained ML pipeline (generated by train.py)</span><br>
+│   ├── <span class="file">metrics.json</span>     <span class="note"># Training accuracy/precision/recall scores</span><br>
+│   ├── <span class="file">threats.db</span>       <span class="note"># SQLite database file (auto-created on first run)</span><br>
+│   ├── <span class="file">.env</span>             <span class="note"># Config: TARGET_URL, RATE_LIMIT, RATE_WINDOW</span><br>
+│   ├── <span class="file">requirements.txt</span> <span class="note"># Python dependencies</span><br>
+│   └── <span class="dir">data/</span><br>
+│       └── <span class="file">sqli_dataset.csv</span> <span class="note"># 30,000-row SQL injection training dataset</span><br>
+│<br>
+└── <span class="dir">frontend/</span><br>
+    ├── <span class="file">index.html</span><br>
+    ├── <span class="file">package.json</span>     <span class="note"># Node dependencies</span><br>
+    ├── <span class="file">vite.config.js</span><br>
+    ├── <span class="file">tailwind.config.js</span> <span class="note"># darkMode: "class", custom fonts</span><br>
+    ├── <span class="file">postcss.config.js</span><br>
+    └── <span class="dir">src/</span><br>
+        ├── <span class="file">main.jsx</span>         <span class="note"># React entry point</span><br>
+        ├── <span class="file">App.jsx</span>          <span class="note"># Dark/light mode state, passes to Dashboard</span><br>
+        ├── <span class="file">index.css</span>        <span class="note"># Tailwind imports, page background, fonts</span><br>
+        └── <span class="dir">pages/</span><br>
+            └── <span class="file">Dashboard.jsx</span>    <span class="note"># Entire UI — stats, chart, table, controls</span>
+    </div>
+  </div>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ══════════════════════ 5. BACKEND ══════════════════════ -->
+<section id="backend">
+  <p class="section-label">Section 05</p>
+  <h2 class="section-title">Backend — How It Works</h2>
+
+  <h3>Startup Sequence</h3>
+  <p>When you run <code>python main.py</code>, the following happens in order:</p>
+  <ol>
+    <li>Load <code>.env</code> file — reads <code>TARGET_URL</code>, <code>RATE_LIMIT</code>, <code>RATE_WINDOW</code></li>
+    <li>Initialize SQLite database — creates the <code>threats</code> and <code>blocked_ips</code> tables if they don't exist</li>
+    <li>Load blocked IPs from the database into memory (a Python <code>set</code> for O(1) lookup speed)</li>
+    <li>Load the trained ML model from <code>model.pkl</code> into memory</li>
+    <li>Start the Uvicorn ASGI server on port 8000</li>
+  </ol>
+
+  <h3>Key Design Decisions</h3>
+
+  <h4>In-Memory Blocklist with Database Backup</h4>
+  <p>
+    Blocked IPs are stored in a Python <code>set</code> in memory so every request can check in O(1) time
+    (instant lookup, no database query per request). When an IP is blocked, it is also written to the
+    <code>blocked_ips</code> SQLite table so the block survives a server restart. On startup, the set
+    is re-populated from the database.
+  </p>
+
+  <h4>Lifespan Context Manager</h4>
+  <p>
+    FastAPI's modern <code>lifespan</code> pattern (replacing the deprecated <code>@app.on_event</code>)
+    is used to run startup logic once before the server begins accepting requests.
+  </p>
+
+  <h4>CORS Middleware</h4>
+  <p>
+    Cross-Origin Resource Sharing is configured to allow the React frontend at <code>http://localhost:5173</code>
+    to call the API. Without this, browsers would block the requests for security reasons.
+  </p>
+
+  <h4>Combined Verdict Logic</h4>
+  <p>
+    The detection pipeline combines two signals — signature rules and ML probability — using this logic:
+  </p>
+  <pre><code><span class="kw">def</span> <span class="fn">_combined_verdict</span>(sig_result, ml_prob):
+    ml_pct = round(ml_prob * 100)
+
+    <span class="comment"># Signatures are authoritative (high precision, known patterns)</span>
+    <span class="kw">if</span> sig_result:
+        confidence = max(ml_pct, 65) <span class="kw">if</span> ml_prob >= 0.5 <span class="kw">else</span> 65
+        <span class="kw">return</span> sig_result[<span class="str">"threat_type"</span>], sig_result[<span class="str">"severity"</span>], confidence
+
+    <span class="comment"># ML-only: only flag if model is very confident (>= 70%)</span>
+    <span class="kw">if</span> ml_prob >= <span class="num">0.70</span>:
+        <span class="kw">return</span> <span class="str">"Anomalous Payload"</span>, <span class="str">"medium"</span>, ml_pct
+
+    <span class="kw">return</span> None, None, None  <span class="comment"># safe</span></code></pre>
+
+  <p>
+    This means: if a signature matches, it's definitely a threat (the ML score just adjusts the confidence
+    percentage). If no signature matches but the ML model is 70%+ sure, it's flagged as an "Anomalous Payload"
+    (catches novel/unknown attacks). Anything below 70% ML confidence with no signature match is considered safe.
+  </p>
+</section>
+
+<!-- ══════════════════════ 6. DETECTION ENGINE ══════════════════════ -->
+<section id="detection">
+  <p class="section-label">Section 06</p>
+  <h2 class="section-title">Detection Engine (Rules + AI)</h2>
+
+  <p>
+    The detection engine in <code>detection.py</code> uses <strong>regular expressions</strong> (regex) —
+    pattern-matching rules — to check if a payload contains known attack signatures.
+    Think of it like a spam filter: it looks for specific keywords and patterns that are only ever
+    seen in malicious requests.
+  </p>
+
+  <h3>Threat Signatures</h3>
+  <table>
+    <thead><tr><th>Threat Type</th><th>Severity</th><th>What It Detects</th><th>Example Payload</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="badge badge-red">SQL Injection</span></td>
+        <td>High</td>
+        <td>SQL keywords that try to manipulate database queries</td>
+        <td><code>' OR 1=1--</code>, <code>UNION SELECT</code>, <code>DROP TABLE</code></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-red">XSS</span></td>
+        <td>High</td>
+        <td>HTML/JavaScript tags injected into input fields</td>
+        <td><code>&lt;script&gt;alert(1)&lt;/script&gt;</code>, <code>onerror=</code></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-amber">Path Traversal</span></td>
+        <td>Medium</td>
+        <td>Attempts to access files outside the web root</td>
+        <td><code>../../etc/passwd</code>, <code>..%2F..%2F</code></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-red">Command Injection</span></td>
+        <td>High</td>
+        <td>Shell commands embedded in input to execute on the server</td>
+        <td><code>; ls -la</code>, <code>| cat /etc/passwd</code>, <code>`whoami`</code></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-amber">Suspicious User-Agent</span></td>
+        <td>Medium</td>
+        <td>Known scanner/bot user agents used by attackers</td>
+        <td><code>sqlmap</code>, <code>nikto</code>, <code>nmap</code>, <code>masscan</code></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-red">Brute Force</span></td>
+        <td>High</td>
+        <td>Automatic — triggered by rate limiter, not regex</td>
+        <td>&gt;20 requests in 60 seconds from one IP</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-amber">
+    <span class="callout-icon">⚠️</span>
+    <span>Signature rules have very high precision (low false positives) but miss novel attacks — attacks that don't match any known pattern. This is why the ML model is added as a second layer.</span>
+  </div>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ══════════════════════ 7. ML MODEL ══════════════════════ -->
+<section id="ml">
+  <p class="section-label">Section 07</p>
+  <h2 class="section-title">Machine Learning Model</h2>
+
+  <h3>Overview</h3>
+  <p>
+    The ML model is a text classification pipeline trained to distinguish between malicious SQL injection
+    payloads and normal text. It gives a probability score between 0 and 1 (0 = safe, 1 = malicious).
+    This allows ACSTD to detect novel or obfuscated attacks that don't match any known regex signature.
+  </p>
+
+  <h3>Training Data</h3>
+  <p>
+    The model was trained on <strong>SQLiV3.csv</strong>, a real-world dataset from Kaggle containing
+    approximately <strong>30,919 rows</strong>. Each row is a web query labeled as either SQL injection or
+    normal. The dataset contains real attack payloads collected from security research.
+  </p>
+
+  <h3>Pipeline</h3>
+  <p>The model is a two-step scikit-learn pipeline:</p>
+
+  <div class="card">
+    <h4>Step 1 — TF-IDF Vectorizer (Feature Extraction)</h4>
+    <p>
+      Converts raw text payloads into numerical feature vectors. Configuration used:
+    </p>
+    <ul>
+      <li><code>analyzer="char_wb"</code> — analyzes character-level n-grams (substrings), not whole words. This makes it robust to typos and obfuscation like <code>SeLeCt</code> instead of <code>SELECT</code>.</li>
+      <li><code>ngram_range=(2, 5)</code> — looks at substrings of 2 to 5 characters long</li>
+      <li><code>max_features=8000</code> — keeps the 8,000 most important character patterns</li>
+      <li><code>sublinear_tf=True</code> — dampens the effect of very frequent patterns</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h4>Step 2 — Logistic Regression (Classification)</h4>
+    <p>
+      A linear classifier that outputs a probability. Fast to train, fast to predict, and
+      highly interpretable. Configuration:
+    </p>
+    <ul>
+      <li><code>C=5.0</code> — regularization strength (higher = less regularization, allows more complex boundary)</li>
+      <li><code>max_iter=1000</code> — allows enough iterations to converge on 30k rows</li>
+    </ul>
+  </div>
+
+  <h3>Achieved Performance (on test split)</h3>
+  <div class="card-grid">
+    <div class="card-sm"><div class="card-icon">🎯</div><h4>Accuracy</h4><p>99.53% — correctly classifies 99.53% of all requests</p></div>
+    <div class="card-sm"><div class="card-icon">🔬</div><h4>Precision</h4><p>99.87% — when it says "threat", it's right 99.87% of the time</p></div>
+    <div class="card-sm"><div class="card-icon">🕵️</div><h4>Recall</h4><p>98.86% — catches 98.86% of all actual threats</p></div>
+    <div class="card-sm"><div class="card-icon">⚖️</div><h4>F1 Score</h4><p>99.36% — balanced harmonic mean of precision and recall</p></div>
+  </div>
+
+  <h3>How to Retrain the Model</h3>
+  <pre><code><span class="comment"># Place your dataset CSV in backend/data/</span>
+<span class="comment"># Then run:</span>
+cd backend
+python train.py
+
+<span class="comment"># Output: model.pkl and metrics.json are created/updated</span></code></pre>
+
+  <div class="callout callout-green">
+    <span class="callout-icon">✅</span>
+    <span>The model is loaded once into memory at startup (<code>model.pkl</code>). Each prediction call is extremely fast — under 1 millisecond — because it just multiplies a sparse vector by a weight matrix.</span>
+  </div>
+</section>
+
+<!-- ══════════════════════ 8. PROXY ══════════════════════ -->
+<section id="proxy">
+  <p class="section-label">Section 08</p>
+  <h2 class="section-title">Reverse Proxy System</h2>
+
+  <h3>What Is a Reverse Proxy?</h3>
+  <p>
+    A reverse proxy is a server that sits between users and your real web application. Users think they're
+    talking to your app, but they're actually talking to ACSTD. ACSTD inspects the request and either
+    blocks it or passes it through to the real app invisibly.
+  </p>
+
+  <h3>How the ACSTD Proxy Works</h3>
+  <p>
+    Any HTTP method (<code>GET</code>, <code>POST</code>, <code>PUT</code>, <code>DELETE</code>, etc.)
+    to <code>http://localhost:8000/proxy/&lt;anything&gt;</code> is handled as follows:
+  </p>
+
+  <ol>
+    <li><strong>Check blocklist</strong> — if the source IP is in the blocklist, immediately return a styled 403 HTML page</li>
+    <li><strong>Check rate limit</strong> — if the IP has exceeded the request threshold, auto-block and return 429</li>
+    <li><strong>Build payload string</strong> — concatenates the URL path + query string + request body into one string for analysis</li>
+    <li><strong>Run detection</strong> — passes the payload through the signature engine and ML model</li>
+    <li><strong>If threat</strong> — logs to DB, broadcasts to dashboard via WebSocket, returns styled 403 page</li>
+    <li><strong>If safe</strong> — forwards the original request (headers + body) to <code>TARGET_URL</code> using httpx</li>
+    <li><strong>Return response</strong> — passes the real site's response back to the user unchanged</li>
+  </ol>
+
+  <h3>Configuration</h3>
+  <p>Edit <code>backend/.env</code> to configure the proxy:</p>
+  <pre><code><span class="comment"># The website to protect</span>
+TARGET_URL=https://your-site.com
+
+<span class="comment"># Block IPs that send more than 20 requests in 60 seconds</span>
+RATE_LIMIT=20
+RATE_WINDOW=60</code></pre>
+
+  <p>
+    You can also change these live from the dashboard's <strong>Proxy Settings</strong> panel without
+    restarting the server. Changes take effect immediately and are also written back to <code>.env</code>.
+  </p>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ══════════════════════ 9. RATE LIMITING ══════════════════════ -->
+<section id="ratelimit">
+  <p class="section-label">Section 09</p>
+  <h2 class="section-title">Rate Limiting & Auto-Block</h2>
+
+  <p>
+    Brute force attacks (trying thousands of passwords, or hammering an endpoint) have a distinctive
+    signature: many requests from the same IP in a short time. ACSTD detects and stops this automatically.
+  </p>
+
+  <h3>Sliding Window Algorithm</h3>
+  <p>
+    ACSTD uses a <strong>sliding window counter</strong> per IP address. For each IP, it keeps a queue
+    (deque) of the timestamps of recent requests. On every new request:
+  </p>
+  <ol>
+    <li>Remove all timestamps older than <code>RATE_WINDOW</code> seconds from the front of the queue</li>
+    <li>Add the current timestamp to the end</li>
+    <li>If the queue length exceeds <code>RATE_LIMIT</code>, the IP is rate-exceeded</li>
+  </ol>
+
+  <pre><code><span class="kw">def</span> <span class="fn">is_exceeded</span>(self, ip):
+    now = datetime.now(timezone.utc).timestamp()
+    dq  = self._hits[ip]
+    <span class="comment"># Drop timestamps outside the window</span>
+    <span class="kw">while</span> dq <span class="kw">and</span> dq[0] < now - RATE_WINDOW:
+        dq.popleft()
+    dq.append(now)
+    <span class="kw">return</span> len(dq) > RATE_LIMIT</code></pre>
+
+  <h3>What Happens When Rate Is Exceeded</h3>
+  <ol>
+    <li>A <code>Brute Force / Rate Abuse</code> threat is logged (severity: <span class="badge badge-red">HIGH</span>, confidence: 99%)</li>
+    <li>The IP is immediately added to the blocklist</li>
+    <li>The block is persisted to SQLite — survives server restarts</li>
+    <li>A WebSocket event is broadcast — the threat appears on the dashboard instantly</li>
+    <li>All future requests from that IP get a 403 block page (not just 429)</li>
+  </ol>
+
+  <div class="callout callout-red">
+    <span class="callout-icon">🚫</span>
+    <span>Rate limiting counts are stored in memory only — they reset when the server restarts. This is intentional: a restart clears the count for all IPs, giving them a fresh start. Only actual blocks are persisted.</span>
+  </div>
+</section>
+
+<!-- ══════════════════════ 10. API REFERENCE ══════════════════════ -->
+<section id="api">
+  <p class="section-label">Section 10</p>
+  <h2 class="section-title">API Endpoints Reference</h2>
+
+  <p>All endpoints are served at <code>http://localhost:8000</code>. Interactive docs available at <code>http://localhost:8000/docs</code>.</p>
+
+  <table>
+    <thead><tr><th>Method</th><th>Path</th><th>Description</th><th>Returns</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="badge badge-green">GET</span></td>
+        <td><code>/health</code></td>
+        <td>Health check — is the server running?</td>
+        <td><code>{"status": "ok"}</code></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-green">GET</span></td>
+        <td><code>/threats</code></td>
+        <td>Get all logged threats, newest first</td>
+        <td>Array of threat objects</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-blue">POST</span></td>
+        <td><code>/analyze</code></td>
+        <td>Analyze a payload. Body: <code>{source_ip, payload, user_agent}</code></td>
+        <td><code>{verdict: "safe"|"threat"|"blocked", ...}</code></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-blue">POST</span></td>
+        <td><code>/threats/{id}/block</code></td>
+        <td>Block the source IP of a threat and mark it as blocked</td>
+        <td><code>{id, status: "blocked"}</code></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-blue">POST</span></td>
+        <td><code>/threats/{id}/ignore</code></td>
+        <td>Mark a threat as ignored (no block)</td>
+        <td><code>{id, status: "ignored"}</code></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-green">GET</span></td>
+        <td><code>/config</code></td>
+        <td>Read current proxy configuration</td>
+        <td><code>{target_url, rate_limit, rate_window}</code></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-blue">POST</span></td>
+        <td><code>/config</code></td>
+        <td>Update proxy config. Writes to <code>.env</code>. Takes effect immediately.</td>
+        <td>Updated config object</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-green">GET</span></td>
+        <td><code>/export</code></td>
+        <td>Download all threats as a CSV file with summary stats</td>
+        <td>CSV file download</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-purple">ANY</span></td>
+        <td><code>/proxy/{path}</code></td>
+        <td>Reverse proxy — inspect, block, or forward to TARGET_URL</td>
+        <td>Proxied response or 403/429 block page</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-amber">WS</span></td>
+        <td><code>/ws</code></td>
+        <td>WebSocket — server pushes real-time threat events to connected dashboards</td>
+        <td>JSON event stream</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>WebSocket Event Types</h3>
+  <table>
+    <thead><tr><th>Event</th><th>When Sent</th><th>Fields</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>new_threat</code></td>
+        <td>A new threat is detected and logged</td>
+        <td><code>event, id, timestamp, source_ip, threat_type, payload, severity, status, confidence</code></td>
+      </tr>
+      <tr>
+        <td><code>status_update</code></td>
+        <td>A threat is blocked or ignored</td>
+        <td><code>event, id, status</code></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ══════════════════════ 11. FRONTEND ══════════════════════ -->
+<section id="frontend">
+  <p class="section-label">Section 11</p>
+  <h2 class="section-title">Frontend Dashboard</h2>
+
+  <h3>Architecture</h3>
+  <p>
+    The frontend is a single-page React application. All UI lives in one file —
+    <code>src/pages/Dashboard.jsx</code> — broken into focused components. State is managed with React
+    hooks (no Redux or external state library needed at this scale).
+  </p>
+
+  <h3>Components</h3>
+  <table>
+    <thead><tr><th>Component</th><th>What It Does</th></tr></thead>
+    <tbody>
+      <tr><td><strong>App</strong></td><td>Manages dark/light mode state. Persists theme to <code>localStorage</code>. Passes <code>dark</code> + <code>setDark</code> down to Dashboard.</td></tr>
+      <tr><td><strong>ThemeToggle</strong></td><td>Sun/moon button in the header. Toggles between dark and light mode.</td></tr>
+      <tr><td><strong>StatsBar</strong></td><td>Four stat cards: Total Threats, Blocked IPs, Last Hour count, Top Attack Type. Numbers animate with count-up on change.</td></tr>
+      <tr><td><strong>ThreatChart</strong></td><td>Horizontal bar chart (Recharts) showing threat count per type. Each bar is colour-coded by attack type.</td></tr>
+      <tr><td><strong>TestDetection</strong></td><td>Collapsible panel. Text input sends a payload to <code>/analyze</code> and shows the verdict inline.</td></tr>
+      <tr><td><strong>Settings</strong></td><td>Collapsible panel. Loads config from <code>/config</code> on mount. Allows editing TARGET_URL, RATE_LIMIT, RATE_WINDOW and saving.</td></tr>
+      <tr><td><strong>SkeletonTable</strong></td><td>Placeholder rows shown while the threats list is loading from the API.</td></tr>
+      <tr><td><strong>StatusBadge</strong></td><td>Animated badge that colour-transitions between new (cyan) / blocked (red) / ignored (slate).</td></tr>
+      <tr><td><strong>ConfidenceBar</strong></td><td>Mini progress bar showing the ML confidence score. Colour goes green → amber → red as confidence increases.</td></tr>
+      <tr><td><strong>ActionButtons</strong></td><td>Block (red) and Ignore (slate) buttons. Only shown for threats with status "new". Shows loading state while the API call is in flight.</td></tr>
+      <tr><td><strong>ToastContainer</strong></td><td>Bottom-right toast notifications for actions (e.g., "IP blocked", "Settings saved"). Auto-dismiss after 3 seconds.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Dark / Light Mode</h3>
+  <p>
+    Tailwind CSS's <code>darkMode: "class"</code> strategy is used. When dark mode is active,
+    the <code>dark</code> class is added to the <code>&lt;html&gt;</code> element, which activates
+    all <code>dark:</code> prefixed Tailwind classes throughout the app. The preference is saved to
+    <code>localStorage</code> so it persists across browser sessions.
+  </p>
+
+  <h3>Real-Time Updates (WebSocket)</h3>
+  <p>
+    On mount, the Dashboard opens a WebSocket connection to <code>ws://localhost:8000/ws</code>.
+    When a new threat arrives (<code>event: "new_threat"</code>), it is prepended to the threat list —
+    it slides in at the top with a Framer Motion animation. When a status changes
+    (<code>event: "status_update"</code>), only that row's status badge updates in place.
+  </p>
+
+  <h3>Animations (Framer Motion)</h3>
+  <table>
+    <thead><tr><th>Animation</th><th>Where</th><th>Duration</th></tr></thead>
+    <tbody>
+      <tr><td>Row slide-in</td><td>New threats in the table</td><td>200ms</td></tr>
+      <tr><td>Count-up numbers</td><td>Stat cards</td><td>700ms</td></tr>
+      <tr><td>Pulsing LIVE dot</td><td>WebSocket status chip</td><td>1.6s loop</td></tr>
+      <tr><td>High-severity glow</td><td>Severity badge for HIGH threats</td><td>2.2s loop</td></tr>
+      <tr><td>Button press</td><td>All action buttons</td><td>150ms</td></tr>
+      <tr><td>Status badge transition</td><td>Status badge on block/ignore</td><td>300ms</td></tr>
+      <tr><td>Filter fade</td><td>Table content on filter change</td><td>150ms</td></tr>
+      <tr><td>Toast slide-up</td><td>Notification toasts</td><td>200ms</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-blue">
+    <span class="callout-icon">♿</span>
+    <span>All animations respect the user's operating system "Reduce Motion" preference via Framer Motion's <code>useReducedMotion()</code> hook. If the user has reduced motion enabled, all animation durations drop to 0ms.</span>
+  </div>
+</section>
+
+<!-- ══════════════════════ 12. DATABASE ══════════════════════ -->
+<section id="database">
+  <p class="section-label">Section 12</p>
+  <h2 class="section-title">Database Schema</h2>
+
+  <p>SQLite is used with two tables. The database file is <code>backend/threats.db</code> and is created automatically on first run.</p>
+
+  <h3>Table: threats</h3>
+  <pre><code>CREATE TABLE threats (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp   TEXT    NOT NULL,          <span class="comment">-- "2024-01-15 10:30:00" (UTC)</span>
+    source_ip   TEXT    NOT NULL,          <span class="comment">-- "192.168.1.100"</span>
+    threat_type TEXT    NOT NULL,          <span class="comment">-- "SQL Injection", "XSS", etc.</span>
+    payload     TEXT    NOT NULL,          <span class="comment">-- The raw malicious string</span>
+    severity    TEXT    NOT NULL           <span class="comment">-- CHECK: 'low', 'medium', 'high'</span>
+                CHECK(severity IN ('low','medium','high')),
+    status      TEXT    NOT NULL DEFAULT 'new'
+                CHECK(status IN ('new','blocked','ignored')),
+    confidence  REAL                       <span class="comment">-- 0–100, from ML model</span>
+)</code></pre>
+
+  <h3>Table: blocked_ips</h3>
+  <pre><code>CREATE TABLE blocked_ips (
+    ip         TEXT PRIMARY KEY,           <span class="comment">-- "192.168.1.100"</span>
+    blocked_at TEXT NOT NULL               <span class="comment">-- "2024-01-15 10:30:00" (UTC)</span>
+)</code></pre>
+
+  <p>The <code>blocked_ips</code> table uses <code>INSERT OR IGNORE</code> — blocking the same IP twice doesn't cause an error, it just silently does nothing.</p>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ══════════════════════ 13. HOW TO RUN ══════════════════════ -->
+<section id="howtorun">
+  <p class="section-label">Section 13</p>
+  <h2 class="section-title">How to Run the Project</h2>
+
+  <h3>Prerequisites</h3>
+  <ul>
+    <li>Python 3.11 or higher</li>
+    <li>Node.js 18 or higher</li>
+    <li>pip (Python package manager)</li>
+    <li>npm (Node package manager)</li>
+  </ul>
+
+  <h3>First-Time Setup</h3>
+
+  <h4>1. Install backend dependencies</h4>
+  <pre><code>cd backend
+pip install -r requirements.txt</code></pre>
+
+  <h4>2. Train the ML model (one time only)</h4>
+  <pre><code><span class="comment"># Place your dataset CSV in backend/data/ first, then:</span>
+python train.py
+
+<span class="comment"># Expected output:</span>
+<span class="comment"># Loaded 30919 rows</span>
+<span class="comment"># Accuracy : 99.53%</span>
+<span class="comment"># Saved model.pkl and metrics.json</span></code></pre>
+
+  <h4>3. (Optional) Seed sample data</h4>
+  <pre><code>python seed.py   <span class="comment"># adds 8 realistic sample threats to the database</span></code></pre>
+
+  <h4>4. Configure the proxy target</h4>
+  <pre><code><span class="comment"># Edit backend/.env</span>
+TARGET_URL=http://localhost:3000   <span class="comment"># your real site</span>
+RATE_LIMIT=20
+RATE_WINDOW=60</code></pre>
+
+  <h4>5. Install frontend dependencies</h4>
+  <pre><code>cd ../frontend
+npm install</code></pre>
+
+  <h3>Running the Project</h3>
+
+  <h4>Start the backend (Terminal 1)</h4>
+  <pre><code>cd backend
+python main.py
+
+<span class="comment"># Expected output:</span>
+<span class="comment"># Loaded 0 blocked IP(s) from database.</span>
+<span class="comment"># ML model loaded.</span>
+<span class="comment"># INFO: Uvicorn running on http://0.0.0.0:8000</span></code></pre>
+
+  <h4>Start the frontend (Terminal 2)</h4>
+  <pre><code>cd frontend
+npm run dev
+
+<span class="comment"># Expected output:</span>
+<span class="comment"># VITE v5.x.x  ready in 300ms</span>
+<span class="comment"># ➜  Local: http://localhost:5173/</span></code></pre>
+
+  <h4>Open the dashboard</h4>
+  <pre><code><span class="comment"># Open your browser and go to:</span>
+http://localhost:5173
+
+<span class="comment"># API docs (auto-generated by FastAPI):</span>
+http://localhost:8000/docs</code></pre>
+
+  <h4>(Optional) Run the traffic simulator</h4>
+  <pre><code>cd backend
+python simulate_traffic.py   <span class="comment"># Ctrl+C to stop</span>
+<span class="comment"># Sends a mix of safe and malicious requests every 1-2 seconds</span></code></pre>
+
+  <h3>Testing the Proxy</h3>
+  <pre><code><span class="comment"># Attack simulation — will be blocked:</span>
+http://localhost:8000/proxy/login?q=1' OR 1=1--
+
+<span class="comment"># Normal request — forwarded to TARGET_URL:</span>
+http://localhost:8000/proxy/home</code></pre>
+</section>
+
+<!-- ══════════════════════ 14. FLOW ══════════════════════ -->
+<section id="flow">
+  <p class="section-label">Section 14</p>
+  <h2 class="section-title">End-to-End Request Flow</h2>
+
+  <h3>Scenario: Attacker sends a SQL Injection via the proxy</h3>
+
+  <table>
+    <thead><tr><th>Step</th><th>Where</th><th>What Happens</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Attacker's browser</td><td>Sends <code>GET /proxy/search?q=' OR 1=1--</code></td></tr>
+      <tr><td>2</td><td>FastAPI <code>/proxy</code></td><td>Extracts source IP, checks blocklist → not blocked</td></tr>
+      <tr><td>3</td><td>RateLimiter</td><td>Adds timestamp to IP's deque → under limit, continue</td></tr>
+      <tr><td>4</td><td>Detection.py</td><td>Regex matches SQL keyword pattern → returns <code>{threat_type: "SQL Injection", severity: "high"}</code></td></tr>
+      <tr><td>5</td><td>ml_model.py</td><td>TF-IDF vectorizes payload → Logistic Regression scores 0.97 (97% malicious)</td></tr>
+      <tr><td>6</td><td><code>_combined_verdict()</code></td><td>Signature hit + ML = confidence <code>max(97, 65) = 97%</code></td></tr>
+      <tr><td>7</td><td>SQLite</td><td>Threat row inserted with all details</td></tr>
+      <tr><td>8</td><td>WebSocket</td><td>Broadcasts <code>new_threat</code> event to all connected dashboards</td></tr>
+      <tr><td>9</td><td>Dashboard</td><td>New row slides into the top of the threat table in real time</td></tr>
+      <tr><td>10</td><td>Attacker</td><td>Receives a styled red 403 HTML block page</td></tr>
+      <tr><td>11</td><td>Operator</td><td>Clicks "Block" on the dashboard → IP added to blocklist</td></tr>
+      <tr><td>12</td><td>SQLite</td><td><code>blocked_ips</code> table updated, survives server restart</td></tr>
+      <tr><td>13</td><td>Next request from same IP</td><td>Rejected immediately at step 2 — no detection needed</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══════════════════════ 15. THREATS REFERENCE ══════════════════════ -->
+<section id="threats">
+  <p class="section-label">Section 15</p>
+  <h2 class="section-title">Threat Types — Plain English Explanations</h2>
+
+  <h3>SQL Injection</h3>
+  <p>
+    Your website talks to a database to fetch user data, products, etc. It does this by sending SQL
+    (database commands). SQL Injection is when an attacker tricks the website into including their
+    own commands in those queries — e.g., <code>' OR 1=1--</code> makes a login query always return
+    "true", bypassing the password check entirely. Worse variants can delete entire databases
+    (<code>DROP TABLE users</code>) or extract all user data.
+  </p>
+
+  <h3>XSS (Cross-Site Scripting)</h3>
+  <p>
+    An attacker injects JavaScript code into a page that other users will see. When another user loads
+    that page, the malicious script runs in their browser — it can steal session cookies (logging in as
+    that user), redirect them to phishing pages, or silently send their data to the attacker's server.
+  </p>
+
+  <h3>Path Traversal</h3>
+  <p>
+    Web servers serve files from a specific folder. Path traversal uses sequences like <code>../../</code>
+    to "climb up" the folder tree and access files outside the web root — such as
+    <code>/etc/passwd</code> (Linux user list) or server configuration files containing passwords.
+  </p>
+
+  <h3>Command Injection</h3>
+  <p>
+    Some web apps pass user input directly to the server's operating system to run a command
+    (e.g., to resize an image or send an email). An attacker can append their own shell commands:
+    <code>filename.jpg; rm -rf /</code> — the server would process the image AND delete all its files.
+  </p>
+
+  <h3>Suspicious User-Agent</h3>
+  <p>
+    Every browser identifies itself with a "User-Agent" string (e.g., "Chrome/120"). Security scanners
+    and automated attack tools like <code>sqlmap</code>, <code>Nikto</code>, and <code>Nmap</code>
+    have distinctive user-agent strings that no real browser would send. Detecting these identifies
+    automated reconnaissance — the step attackers take before a real attack.
+  </p>
+
+  <h3>Brute Force / Rate Abuse</h3>
+  <p>
+    Trying thousands of username/password combinations automatically. No clever hacking — just speed.
+    ACSTD detects this by counting requests per IP over time. When an IP exceeds the threshold, it is
+    auto-blocked before the attack can succeed.
+  </p>
+
+  <hr />
+  <p style="text-align:center; color: var(--muted); font-size:12px; margin-top: 40px;">
+    ACSTD · AI Cyber Security Threat Detector · Project Documentation<br>
+    Built with FastAPI, React, scikit-learn, SQLite, WebSockets, Tailwind CSS, Framer Motion
+  </p>
+</section>
+
+</body>
+</html>

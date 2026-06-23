@@ -1,0 +1,15 @@
+{
+  "dataset_rows": 30919,
+  "train_size": 24735,
+  "test_size": 6184,
+  "accuracy": 99.53,
+  "precision": 99.87,
+  "recall": 98.86,
+  "f1": 99.36,
+  "confusion_matrix": {
+    "TN": 3905,
+    "FP": 3,
+    "FN": 26,
+    "TP": 2250
+  }
+}
