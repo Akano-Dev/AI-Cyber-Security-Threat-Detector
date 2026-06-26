@@ -11,7 +11,7 @@ import html as h
 
 app = FastAPI(docs_url=None, redoc_url=None)
 
-PROXY = "http://localhost:8000/proxy"
+PROXY = "http://localhost:8000/api/v1/proxy"
 
 # ── In-memory data ───────────────────────────────────────────────────────────
 
@@ -302,6 +302,6 @@ async def comments_post(demo: str = Form("false"), author: str = Form("Anonymous
 
 if __name__ == "__main__":
     print("🌐  IntraPortal demo site  →  http://localhost:8090")
-    print("🛡   Access through ACSTD  →  http://localhost:8000/proxy/login")
-    print("⚡   Demo mode             →  http://localhost:8000/proxy/login?demo=true")
+    print("🛡   Access through ACSTD  →  http://localhost:8000/api/v1/proxy/login")
+    print("⚡   Demo mode             →  http://localhost:8000/api/v1/proxy/login?demo=true")
     uvicorn.run("demo_site:app", host="0.0.0.0", port=8090, reload=True)

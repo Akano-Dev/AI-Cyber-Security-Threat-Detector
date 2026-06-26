@@ -1,0 +1,272 @@
+==============================================================================
+ ACSTD — AI CYBER SECURITY THREAT DETECTOR
+ HOW TO RUN + HOW TO DEMO   (engineer's walkthrough for the review)
+==============================================================================
+
+Audience : the professor / reviewer.
+Goal     : stand the system up locally and demonstrate it detecting real web
+           attacks in real time, then drive the dashboard the way an operator
+           (security analyst) would.
+
+Read top to bottom once. The "5-MINUTE DEMO SCRIPT" near the end is what to
+actually say and click while presenting.
+
+
+------------------------------------------------------------------------------
+0. WHAT YOU ARE LOOKING AT  (30-second pitch)
+------------------------------------------------------------------------------
+ACSTD is a defensive security monitor. It inspects incoming web requests and
+classifies each one as SAFE or as a specific THREAT (SQL injection, XSS, path
+traversal, command injection, suspicious user-agent, or rate abuse). Threats
+are stored, scored with a confidence level, and pushed LIVE to a dashboard
+where an analyst can BLOCK the source IP or IGNORE the alert.
+
+It has four moving parts:
+
+  1. BACKEND API  (FastAPI, Python)      -> the detection brain + REST/WebSocket
+  2. FRONTEND     (React + Vite)         -> the live analyst dashboard
+  3. DEMO SITE    (a fake vulnerable     -> something real to attack, sitting
+                   corporate intranet)      behind ACSTD's inspecting proxy
+  4. SIMULATOR    (a Python script)      -> generates realistic mixed traffic
+
+Detection itself is a HYBRID of two techniques:
+  - SIGNATURE RULES : fast, precise regex patterns for textbook attacks.
+  - ML MODEL        : TF-IDF (character n-grams) + Logistic Regression, which
+                      catches obfuscated / novel payloads the rules miss.
+The two are combined into one verdict + confidence score (see detection/engine.py).
+
+
+------------------------------------------------------------------------------
+1. PREREQUISITES
+------------------------------------------------------------------------------
+  - Python 3.11+        (check: python --version)
+  - Node.js 18+ & npm   (check: node --version)
+  - A terminal. On Windows use PowerShell. All commands below are run FROM the
+    project root unless a `cd` says otherwise:
+        C:\Users\rimso\Desktop\Projects\ACSTD
+
+
+------------------------------------------------------------------------------
+2. ONE-TIME SETUP
+------------------------------------------------------------------------------
+
+  2a. Backend dependencies
+      cd backend
+      python -m venv .venv
+      .\.venv\Scripts\Activate.ps1        (PowerShell)   # or: source .venv/bin/activate  on macOS/Linux
+      pip install -r requirements.txt
+
+  2b. Configuration (.env)
+      A .env already exists in backend/. If it does not, copy the template:
+          copy .env.example .env           (Windows)     # or: cp .env.example .env
+      Defaults are fine for the demo. Key values:
+          API_KEY=acstd-dev-key            <- admin key for block/ignore/config
+          TARGET_URL=http://localhost:8090 <- the site ACSTD protects (demo site)
+          RATE_LIMIT=20 / RATE_WINDOW=60   <- auto-block an IP doing >20 req / 60s
+
+  2c. Train the ML model (optional but recommended)
+      The app RUNS without it — signature rules still fire and you'll just see a
+      one-line "model.pkl not found" warning. To enable the ML half:
+          cd backend
+          python train.py
+      This reads data/sqli_dataset.csv and writes model.pkl + metrics.json,
+      printing accuracy / precision / recall / F1 and a confusion matrix.
+      (Talking point: those metrics are measured on an SQLi dataset, so they
+       describe the SQLi case honestly rather than overclaiming on every class.)
+
+  2d. Frontend dependencies
+      cd frontend
+      npm install
+
+
+------------------------------------------------------------------------------
+3. RUNNING THE SYSTEM  (open one terminal PER service; leave them running)
+------------------------------------------------------------------------------
+Start them in this order. Each line is the whole command for that terminal.
+
+  TERMINAL 1 — Backend API  (the detector)
+      cd backend
+      uvicorn app.main:app --reload
+      -> serves on http://localhost:8000
+      -> interactive API docs (Swagger UI): http://localhost:8000/docs
+      -> health check: http://localhost:8000/health   (should return {"status":"ok"})
+
+  TERMINAL 2 — Frontend dashboard
+      cd frontend
+      npm run dev
+      -> open http://localhost:5173
+
+  TERMINAL 3 — Demo target site  (the thing we attack)
+      cd backend
+      python demo_site.py
+      -> a fake "IntraPortal" intranet on http://localhost:8090
+      -> the SAFE way to view it is THROUGH ACSTD's proxy (so traffic is inspected):
+             http://localhost:8000/api/v1/proxy/login?demo=true
+         The ?demo=true flag adds a one-click "Attack Simulator" panel to the page.
+
+  TERMINAL 4 (optional) — Traffic simulator  (auto-generates a live feed)
+      cd backend
+      python simulate_traffic.py
+      -> sends a ~70% safe / ~30% malicious stream at the /analyze endpoint.
+         Watch the dashboard light up. Ctrl+C to stop.
+
+  OPTIONAL — Pre-seed some history (so the dashboard isn't empty on first load)
+      cd backend
+      python seed.py        # inserts 8 example threats, then exit
+  Note: seeding/simulating is for the demo only; you don't need both.
+
+What "working" looks like: the dashboard at :5173 shows a green "connected"
+state, summary stat cards, and (once traffic flows) new threat rows appearing
+in real time without refreshing the page.
+
+
+------------------------------------------------------------------------------
+4. USING THE DASHBOARD  (how an analyst operates it)
+------------------------------------------------------------------------------
+Open http://localhost:5173.
+
+  - LIVE THREAT FEED: each detected request is a row showing time, source IP,
+    threat type, the actual payload, a severity dot (high/medium/low), a
+    confidence %, and a status (new / blocked / ignored). New rows stream in
+    over a WebSocket — no refresh needed.
+
+  - SUMMARY STATS: cards/among them total threats, blocked IPs, and a breakdown
+    by threat type — your at-a-glance situational awareness.
+
+  - FILTERS: All / New / Blocked / Ignored to focus the feed.
+
+  - ACTIONS per threat:
+        BLOCK  -> adds that source IP to the blocklist. Any further request
+                  from it returns verdict "blocked" before detection even runs,
+                  and the block persists in the database.
+        IGNORE -> marks the alert as a false positive / accepted, keeps it in
+                  the record but out of your "new" queue.
+
+  - LIVE PROOF that a block works: after you BLOCK an IP, trigger another
+    attack from that same IP (via the demo site or simulator). It comes back
+    "blocked" instead of being re-detected. That closes the loop.
+
+
+------------------------------------------------------------------------------
+5. USING THE API DIRECTLY  (for the "show me it's a real API" question)
+------------------------------------------------------------------------------
+Everything the dashboard does is just HTTP under /api/v1. Open the Swagger UI
+at http://localhost:8000/docs to browse and "Try it out" on every endpoint.
+
+  Public endpoints:
+      GET  /health                     liveness probe
+      POST /api/v1/analyze             classify one payload -> verdict + type + confidence
+      GET  /api/v1/threats             list logged threats
+      GET  /api/v1/stats               counts by type / severity / status
+      GET  /api/v1/stats/model         which model loaded + its metrics
+      GET  /api/v1/export              download a CSV incident report
+      WS   /api/v1/ws                  live threat stream (what the dashboard uses)
+      ANY  /api/v1/proxy/{path}        inspecting reverse proxy in front of TARGET_URL
+
+  Admin endpoints — require the header  X-API-Key: acstd-dev-key
+      POST /api/v1/threats/{id}/block
+      POST /api/v1/threats/{id}/ignore
+      GET/POST /api/v1/config
+      POST /api/v1/demo/reset          wipe all threats + unblock all IPs
+
+  Example: classify a SQL-injection payload by hand (PowerShell):
+      curl -X POST http://localhost:8000/api/v1/analyze `
+           -H "Content-Type: application/json" `
+           -d '{\"source_ip\":\"203.0.113.5\",\"payload\":\"'' OR ''1''=''1'' --\",\"user_agent\":\"sqlmap/1.7\"}'
+      -> expect: {"verdict":"threat","threat_type":"SQL Injection", ... "confidence": ...}
+
+  Example: block an IP (admin, needs the key):
+      curl -X POST http://localhost:8000/api/v1/threats/1/block -H "X-API-Key: acstd-dev-key"
+
+  Example: reset between demo runs:
+      curl -X POST http://localhost:8000/api/v1/demo/reset -H "X-API-Key: acstd-dev-key"
+
+
+------------------------------------------------------------------------------
+6. 5-MINUTE DEMO SCRIPT  (what to do live, in order)
+------------------------------------------------------------------------------
+Have Terminals 1-3 running (backend, frontend, demo site). Optionally run
+seed.py first so there's some history.
+
+  1. "Here is the analyst dashboard."  -> show http://localhost:5173, point out
+     the live feed, stat cards, and the WebSocket 'connected' indicator.
+
+  2. "Here is a normal vulnerable website, protected by our detector."
+     -> open  http://localhost:8000/api/v1/proxy/login?demo=true
+        Note the purple DEMO banner + the floating "Attack Simulator" panel.
+
+  3. "Watch a real attack get caught in real time."
+     -> on the demo site, click the red "SQL Injection" button (it auto-fills
+        ' OR '1'='1 and submits). Immediately switch to the dashboard: a new
+        HIGH-severity "SQL Injection" row has appeared, with the payload and a
+        confidence score. Repeat with the XSS and Path Traversal buttons on the
+        Search/Bulletin pages to show multi-class detection.
+
+  4. "An analyst responds."  -> click BLOCK on that threat row. Then click the
+     same attack button again on the demo site -> it now comes back BLOCKED,
+     proving the response actually took effect. Click IGNORE on another row to
+     show triage of a false positive.
+
+  5. "It's a documented, real API, not just a UI."  -> open
+     http://localhost:8000/docs, expand POST /api/v1/analyze, and "Try it out"
+     with a payload of your choice. Show GET /api/v1/stats/model to prove the
+     ML model is loaded and report its metrics.
+
+  6. (Optional) "And it scales to live traffic."  -> start Terminal 4
+     (simulate_traffic.py) and let the feed stream for ~20 seconds.
+
+  7. "Reports for the record."  -> GET /api/v1/export downloads a CSV incident
+     report with per-type / per-severity / per-status summaries.
+
+  Cleanup before the next run:  POST /api/v1/demo/reset  (clears threats +
+  unblocks every IP) so you start from a clean slate.
+
+
+------------------------------------------------------------------------------
+7. ARCHITECTURE CHEAT-SHEET  (for follow-up questions)
+------------------------------------------------------------------------------
+  Request flow:
+      client -> /api/v1/proxy (or /analyze) -> rate-limit + blocklist check
+             -> detection/engine.evaluate()  = signatures.analyze()  +  ml.pipeline.predict()
+             -> verdict (type, severity, confidence)
+             -> saved to SQLite (threats.db) AND broadcast over WebSocket
+             -> dashboard updates instantly.
+
+  Where things live (backend/app/):
+      main.py                 app factory, CORS, body-size limit, error handler, /health
+      config.py               settings loaded from .env (pydantic-settings)
+      api/v1/                  the REST + WS endpoints (analyze, threats, stats, config, proxy, ws)
+      detection/signatures.py  regex rules per threat type
+      detection/engine.py      combines signature + ML into one verdict + confidence
+      ml/pipeline.py + classical.py   loads model.pkl, returns a malicious probability
+      db/                      SQLAlchemy/sqlite access (threats, blocked IPs)
+      core/security.py         X-API-Key auth + real client-IP (X-Forwarded-For aware)
+      core/rate_limit.py       per-IP rate limiting -> auto-block
+
+  Honest caveats to volunteer if asked:
+      - The ML model was trained on an SQLi dataset, so it's strongest on SQLi;
+        the other classes lean on signatures. We document this rather than hide it.
+      - Signature regexes catch textbook attacks but are bypassable by heavy
+        obfuscation; the ML layer is there precisely to cover those gaps.
+      - "Scalable" here means stateless workers + a real DB option, not that
+        it's deployed to production traffic.
+
+
+------------------------------------------------------------------------------
+8. TROUBLESHOOTING
+------------------------------------------------------------------------------
+  - Dashboard empty / "disconnected": is Terminal 1 (uvicorn) running on :8000?
+    Check http://localhost:8000/health.
+  - "model.pkl not found" in the backend log: harmless — run `python train.py`
+    to enable the ML half; signatures still work without it.
+  - 401 Unauthorized on block/ignore/config: send header  X-API-Key: acstd-dev-key
+    (the dashboard does this for you automatically).
+  - Port already in use: stop the other process or change the port
+    (uvicorn ... --port 8001, and update frontend/src/api.js HOST to match).
+  - CORS error in the browser console: the frontend must be the origin in
+    cors_origins (http://localhost:5173 by default — that's Vite's default port).
+  - Proxy returns 502: the TARGET_URL site (demo_site.py on :8090) isn't running.
+
+==============================================================================
+ End. For the deeper "why" (model choice, phased roadmap), see PROJECT_PLAN.txt.
+==============================================================================

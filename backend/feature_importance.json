@@ -1,0 +1,356 @@
+{
+  "random_forest_top": [
+    {
+      "ngram": "..",
+      "importance": 0.02108
+    },
+    {
+      "ngram": " =",
+      "importance": 0.01447
+    },
+    {
+      "ngram": " ) ",
+      "importance": 0.014
+    },
+    {
+      "ngram": "=..",
+      "importance": 0.0129
+    },
+    {
+      "ngram": "= ",
+      "importance": 0.01289
+    },
+    {
+      "ngram": "=.",
+      "importance": 0.01167
+    },
+    {
+      "ngram": " )",
+      "importance": 0.0105
+    },
+    {
+      "ngram": "> ",
+      "importance": 0.01008
+    },
+    {
+      "ngram": "%2",
+      "importance": 0.00983
+    },
+    {
+      "ngram": " on",
+      "importance": 0.00943
+    },
+    {
+      "ngram": " <",
+      "importance": 0.00878
+    },
+    {
+      "ngram": " = ",
+      "importance": 0.00874
+    },
+    {
+      "ngram": " 1",
+      "importance": 0.00873
+    },
+    {
+      "ngram": "( ",
+      "importance": 0.0067
+    },
+    {
+      "ngram": "e%2",
+      "importance": 0.00603
+    },
+    {
+      "ngram": "lec",
+      "importance": 0.00581
+    },
+    {
+      "ngram": " se",
+      "importance": 0.0056
+    },
+    {
+      "ngram": "ocu",
+      "importance": 0.00558
+    },
+    {
+      "ngram": "e%",
+      "importance": 0.00557
+    },
+    {
+      "ngram": "pt",
+      "importance": 0.00551
+    },
+    {
+      "ngram": "e=..",
+      "importance": 0.00528
+    },
+    {
+      "ngram": "t(",
+      "importance": 0.00519
+    },
+    {
+      "ngram": ") ",
+      "importance": 0.00512
+    },
+    {
+      "ngram": "oc",
+      "importance": 0.00509
+    },
+    {
+      "ngram": "/.",
+      "importance": 0.00502
+    }
+  ],
+  "logistic_regression_per_class": {
+    "benign": [
+      {
+        "ngram": ", ",
+        "weight": 2.903
+      },
+      {
+        "ngram": "a ",
+        "weight": 2.778
+      },
+      {
+        "ngram": " c",
+        "weight": 2.73
+      },
+      {
+        "ngram": " s",
+        "weight": 2.488
+      },
+      {
+        "ngram": " f",
+        "weight": 2.455
+      },
+      {
+        "ngram": "o ",
+        "weight": 2.434
+      },
+      {
+        "ngram": "m ",
+        "weight": 2.422
+      },
+      {
+        "ngram": "fr",
+        "weight": 2.41
+      },
+      {
+        "ngram": " s ",
+        "weight": 2.408
+      },
+      {
+        "ngram": " fr",
+        "weight": 2.398
+      },
+      {
+        "ngram": "fro",
+        "weight": 2.391
+      },
+      {
+        "ngram": "from",
+        "weight": 2.383
+      }
+    ],
+    "command_injection": [
+      {
+        "ngram": "` ",
+        "weight": 3.295
+      },
+      {
+        "ngram": "$(",
+        "weight": 3.04
+      },
+      {
+        "ngram": " `",
+        "weight": 2.852
+      },
+      {
+        "ngram": "& ",
+        "weight": 2.807
+      },
+      {
+        "ngram": "; ",
+        "weight": 2.569
+      },
+      {
+        "ngram": " $(",
+        "weight": 2.362
+      },
+      {
+        "ngram": " $",
+        "weight": 2.305
+      },
+      {
+        "ngram": "dir",
+        "weight": 2.295
+      },
+      {
+        "ngram": "| ",
+        "weight": 2.281
+      },
+      {
+        "ngram": " ; ",
+        "weight": 2.099
+      },
+      {
+        "ngram": " test",
+        "weight": 2.088
+      },
+      {
+        "ngram": " tes",
+        "weight": 2.088
+      }
+    ],
+    "path_traversal": [
+      {
+        "ngram": "..",
+        "weight": 5.529
+      },
+      {
+        "ngram": "%2",
+        "weight": 3.068
+      },
+      {
+        "ngram": "../",
+        "weight": 2.69
+      },
+      {
+        "ngram": "./",
+        "weight": 2.69
+      },
+      {
+        "ngram": "..\\",
+        "weight": 2.269
+      },
+      {
+        "ngram": ".\\",
+        "weight": 2.269
+      },
+      {
+        "ngram": "2e",
+        "weight": 2.244
+      },
+      {
+        "ngram": "=.",
+        "weight": 2.241
+      },
+      {
+        "ngram": "=..",
+        "weight": 2.241
+      },
+      {
+        "ngram": "2e%",
+        "weight": 2.174
+      },
+      {
+        "ngram": "2e%2",
+        "weight": 2.174
+      },
+      {
+        "ngram": "e%2",
+        "weight": 2.174
+      }
+    ],
+    "sql_injection": [
+      {
+        "ngram": " )",
+        "weight": 4.619
+      },
+      {
+        "ngram": " ) ",
+        "weight": 4.619
+      },
+      {
+        "ngram": "# ",
+        "weight": 4.421
+      },
+      {
+        "ngram": "= ",
+        "weight": 4.095
+      },
+      {
+        "ngram": " =",
+        "weight": 4.095
+      },
+      {
+        "ngram": " = ",
+        "weight": 4.095
+      },
+      {
+        "ngram": "' ",
+        "weight": 3.967
+      },
+      {
+        "ngram": "-- ",
+        "weight": 3.951
+      },
+      {
+        "ngram": "- ",
+        "weight": 3.951
+      },
+      {
+        "ngram": "--",
+        "weight": 3.95
+      },
+      {
+        "ngram": " -",
+        "weight": 3.822
+      },
+      {
+        "ngram": ") ",
+        "weight": 3.64
+      }
+    ],
+    "xss": [
+      {
+        "ngram": "> ",
+        "weight": 2.504
+      },
+      {
+        "ngram": " <",
+        "weight": 2.345
+      },
+      {
+        "ngram": " on",
+        "weight": 2.133
+      },
+      {
+        "ngram": "t(",
+        "weight": 2.12
+      },
+      {
+        "ngram": "pt",
+        "weight": 1.91
+      },
+      {
+        "ngram": "ocu",
+        "weight": 1.81
+      },
+      {
+        "ngram": "oc",
+        "weight": 1.772
+      },
+      {
+        "ngram": ")>",
+        "weight": 1.762
+      },
+      {
+        "ngram": "1)",
+        "weight": 1.683
+      },
+      {
+        "ngram": "(1",
+        "weight": 1.683
+      },
+      {
+        "ngram": "t(1",
+        "weight": 1.683
+      },
+      {
+        "ngram": "t(1)",
+        "weight": 1.683
+      }
+    ]
+  }
+}

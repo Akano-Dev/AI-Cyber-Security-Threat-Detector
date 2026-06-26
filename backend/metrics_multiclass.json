@@ -1,0 +1,159 @@
+{
+  "classes": [
+    "benign",
+    "sql_injection",
+    "xss",
+    "path_traversal",
+    "command_injection"
+  ],
+  "dataset_rows": 34975,
+  "train_size": 27980,
+  "test_size": 6995,
+  "features": "tfidf char_wb (2,5), max 5000, sublinear",
+  "random_forest": {
+    "accuracy": 99.8,
+    "macro_f1": 99.8,
+    "per_class": {
+      "benign": {
+        "precision": 99.08,
+        "recall": 100.0,
+        "f1": 99.54,
+        "support": 1399
+      },
+      "sql_injection": {
+        "precision": 100.0,
+        "recall": 99.0,
+        "f1": 99.5,
+        "support": 1396
+      },
+      "xss": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0,
+        "support": 1400
+      },
+      "path_traversal": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0,
+        "support": 1400
+      },
+      "command_injection": {
+        "precision": 99.93,
+        "recall": 100.0,
+        "f1": 99.96,
+        "support": 1400
+      }
+    },
+    "confusion_matrix": [
+      [
+        1399,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        13,
+        1382,
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        0,
+        1400,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        1400,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        1400
+      ]
+    ]
+  },
+  "logistic_regression": {
+    "accuracy": 99.74,
+    "macro_f1": 99.74,
+    "per_class": {
+      "benign": {
+        "precision": 98.94,
+        "recall": 99.86,
+        "f1": 99.4,
+        "support": 1399
+      },
+      "sql_injection": {
+        "precision": 99.86,
+        "recall": 98.85,
+        "f1": 99.35,
+        "support": 1396
+      },
+      "xss": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0,
+        "support": 1400
+      },
+      "path_traversal": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0,
+        "support": 1400
+      },
+      "command_injection": {
+        "precision": 99.93,
+        "recall": 100.0,
+        "f1": 99.96,
+        "support": 1400
+      }
+    },
+    "confusion_matrix": [
+      [
+        1397,
+        2,
+        0,
+        0,
+        0
+      ],
+      [
+        15,
+        1380,
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        0,
+        1400,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        1400,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        1400
+      ]
+    ]
+  }
+}

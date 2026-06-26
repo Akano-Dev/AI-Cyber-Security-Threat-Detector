@@ -1,4 +1,4 @@
-from database import init_db, get_conn
+from app.db.database import init_db, get_conn
 
 THREATS = [
     ("2026-06-21 08:12:03", "192.168.1.45",  "SQL Injection",   "' OR '1'='1' --",                          "high",   "new"),

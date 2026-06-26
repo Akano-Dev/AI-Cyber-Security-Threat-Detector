@@ -1,0 +1,264 @@
+==============================================================================
+ ACSTD — AI CYBER SECURITY THREAT DETECTOR
+ PROJECT REVAMP PLAN  (API-first + Hybrid AI/ML)
+ Author: engineering plan prepared with Claude
+ Status: PLANNING COMPLETE — awaiting "go" to start Phase 1
+==============================================================================
+
+This file is the human-readable master plan. A shorter checklist mirror lives in
+PROJECT_PLAN.md (used as a quick working reference). Read this one to understand
+WHAT we are building and WHY. Read the .md to see WHERE we are.
+
+
+------------------------------------------------------------------------------
+1. GOAL
+------------------------------------------------------------------------------
+Turn the current student-demo threat detector into a proper, scalable, API-first
+AI/ML project that could be defended in a real engineering review:
+
+  * Final deliverable = a clean, documented, authenticated HTTP API (/api/v1)
+    with auto-generated Swagger docs. (This is what the professor asked for.)
+  * The detection brain becomes a real HYBRID AI/ML system, multi-class, that
+    classifies a payload as one of:
+        benign | sql_injection | xss | path_traversal | command_injection
+  * The React dashboard stays, refreshed to consume the new API.
+  * Production concerns are addressed: auth, real client IP, shared rate-limit
+    state, a real DB option, error handling, logging, tests, Docker, CI.
+
+
+------------------------------------------------------------------------------
+2. WHICH AI MODEL ARE WE USING?  (direct answer to the question asked)
+------------------------------------------------------------------------------
+CURRENT (before this revamp):
+  - TF-IDF character n-grams  +  Logistic Regression   (see backend/train.py)
+  - This IS a real, industry-standard ML model. Its problem is NOT that it is
+    "not AI" — its problems are:
+        (a) it was trained ONLY on an SQL-injection dataset (sqli_dataset.csv),
+            so it cannot really distinguish XSS / path traversal / command
+            injection;
+        (b) it is a single binary classifier (malicious vs not), not multi-class.
+
+NEW (this revamp) — HYBRID, two stages:
+  STAGE 1  "fast screener" — runs on EVERY request, ~1-2 ms:
+      TF-IDF (char n-grams) + Linear classifier (LinearSVC/LogReg), MULTI-CLASS.
+  STAGE 2  "deep checker" — runs ONLY on uncertain requests:
+      DistilBERT (a real, market-standard Transformer model from Hugging Face),
+      fine-tuned on our multi-class dataset.
+
+  Escalation rule: if Stage 1 is confident -> use it. If Stage 1 is unsure
+  (top-class probability in an "uncertain band", e.g. 0.45-0.75) -> ask Stage 2.
+
+  Why hybrid instead of "transformer on everything": an inline security proxy
+  sees every request, so latency matters. Running a Transformer on 100% of
+  traffic is slow/expensive; running a fast model first and only escalating the
+  hard cases gives transformer-level accuracy at near-classical speed. This is
+  how real production ML serving is designed.
+
+Models live behind one interface (backend/app/ml/pipeline.py) so we can swap or
+add a model (even a Claude LLM layer later) without touching the API.
+
+
+------------------------------------------------------------------------------
+3. HONEST CAVEATS (so nobody is misled in the review)
+------------------------------------------------------------------------------
+  * DATA is the #1 driver of quality. The current 99.5% accuracy is real but
+    measured on an SQLi-only dataset, so it overstates real-world ability. We
+    will build a MULTI-CLASS dataset from curated public payload sets + benign
+    traffic. It will be a solid teaching/demo dataset, NOT commercial threat
+    intelligence — we will document its provenance honestly.
+  * Signature regexes catch textbook attacks but are bypassable by encoding/
+    obfuscation. They stay as a fast, precise first filter; the ML stages cover
+    novel/obfuscated cases. Neither alone is a complete WAF — together they are
+    a credible detector.
+  * "Scalable" here means: stateless API workers, shared state in Redis, a real
+    DB option (Postgres), Docker, and horizontal-scale-ready code — not that we
+    are deploying to production for real traffic in this project.
+
+
+------------------------------------------------------------------------------
+4. TARGET ARCHITECTURE  (folder layout after revamp)
+------------------------------------------------------------------------------
+ACSTD/
+  backend/
+    app/
+      main.py                 FastAPI app factory + lifespan + router mount
+      config.py               Pydantic settings (reads .env)
+      api/
+        deps.py               auth dependency, shared dependencies
+        v1/
+          router.py           aggregates all v1 routers
+          analyze.py          POST /api/v1/analyze
+          threats.py          GET /api/v1/threats, block/ignore
+          config.py           GET/POST /api/v1/config   (admin, authed)
+          stats.py            GET /api/v1/stats, /api/v1/stats/model
+          proxy.py            /api/v1/proxy/{path}
+          ws.py               WS  /api/v1/ws
+      core/
+        security.py           API-key auth + real client-IP (X-Forwarded-For)
+        rate_limit.py         limiter: in-memory (dev) / Redis (prod)
+        logging.py            structured logging setup
+      db/
+        database.py           SQLAlchemy engine/session (SQLite dev / Postgres prod)
+        models.py             ORM: Threat, BlockedIP
+        repository.py         data-access helpers
+      detection/
+        signatures.py         multi-vector regex rules (now also headers/cookies)
+        engine.py             combines signatures + ML into a final verdict
+      ml/
+        classical.py          Stage-1 model load/predict
+        transformer.py        Stage-2 DistilBERT load/predict (lazy)
+        pipeline.py           hybrid escalation orchestration
+        registry.py           model version + metrics metadata
+      schemas/                Pydantic request/response models
+    ml_training/
+      data/
+        raw/                  source payload files per class
+        build_dataset.py      assemble multi-class dataset.csv (+ provenance)
+      train_classical.py      train Stage-1, save artifact + metrics
+      train_transformer.py    fine-tune DistilBERT, save artifact + metrics
+      evaluate.py             per-class precision/recall/F1, confusion matrix
+      artifacts/              classical.pkl, distilbert/, metrics.json
+    tests/                    pytest: signatures, ml, api, auth, rate-limit
+    requirements.txt          API runtime deps
+    requirements-ml.txt       heavy training deps (torch, transformers) — separate
+    Dockerfile
+    .env.example
+  frontend/                   refreshed to call /api/v1 with API key
+  docker-compose.yml          api + redis (+ optional postgres)
+  .github/workflows/ci.yml    lint + tests on push
+  PROJECT_PLAN.txt  (this file)
+  PROJECT_PLAN.md   (checklist mirror)
+
+
+------------------------------------------------------------------------------
+5. PHASES  (each phase is shippable and leaves the app runnable)
+------------------------------------------------------------------------------
+
+PHASE 0 — Scaffolding & safety net
+  Goal: new package skeleton + config + logging + test harness, app still runs.
+  Tasks:
+    - Create app/ package layout (empty modules + app factory).
+    - Add config.py (pydantic-settings) + .env.example.
+    - Add structured logging.
+    - Add pytest + one smoke test (/health).
+  Done when: `uvicorn app.main:app` serves /health and `pytest` passes.
+
+PHASE 1 — API restructure + security hardening   <-- FIRST REAL WORK
+  Goal: move everything under /api/v1, add the production-critical fixes.
+  Tasks:
+    - Move endpoints into api/v1/*; mount under /api/v1.
+    - API-key auth dependency; protect admin endpoints (config, reset, block,
+      ignore, export). analyze/proxy: authed or allowlisted per config.
+    - Real client IP via X-Forwarded-For (trusted-proxy aware).
+    - Global exception handlers; request body size limit; proxy try/except +
+      timeouts so a dead target returns a clean 502, not a 500.
+    - Convert DB access to SQLAlchemy models (SQLite still default).
+  Done when: Swagger shows /api/v1/*, admin calls require a key, malformed/oversized
+             requests fail gracefully, existing detection still works.
+
+PHASE 2 — Multi-class data pipeline
+  Goal: a labelled dataset covering all 5 classes.
+  Tasks:
+    - build_dataset.py assembles benign + sqli + xss + path_traversal +
+      command_injection from curated payload sets + benign corpus.
+    - Balance classes, dedupe, train/val/test split, write provenance notes.
+  Done when: ml_training/data/dataset.csv exists with class counts printed.
+
+PHASE 3 — Stage-1 classical multi-class model
+  Goal: replace the binary SQLi model with a fast multi-class model.
+  Tasks:
+    - train_classical.py (TF-IDF + LinearSVC/LogReg, calibrated probabilities).
+    - evaluate.py: per-class precision/recall/F1 + confusion matrix -> metrics.json.
+    - Wire ml/classical.py + detection/engine.py to multi-class output.
+  Done when: /api/v1/analyze returns a specific class + confidence; metrics saved.
+
+PHASE 4 — Stage-2 DistilBERT + hybrid escalation
+  Goal: add the transformer and the escalation logic.
+  Tasks:
+    - train_transformer.py fine-tunes DistilBERT (Hugging Face) multi-class.
+    - ml/transformer.py lazy-loads it; ml/pipeline.py implements the
+      confident/uncertain escalation; registry.py exposes model versions.
+    - /api/v1/stats/model surfaces which model decided + versions + metrics.
+  Done when: uncertain payloads visibly escalate to DistilBERT and accuracy on
+             the held-out test set improves vs Stage-1 alone.
+
+PHASE 5 — Scale-out state + production DB
+  Goal: make it horizontally scalable.
+  Tasks:
+    - Redis-backed rate limiter + blocklist (shared across workers); in-memory
+      stays as the dev fallback.
+    - Postgres support via DATABASE_URL (SQLite remains dev default).
+    - docker-compose.yml: api + redis (+ optional postgres).
+  Done when: two API workers share rate-limit/blocklist state via Redis.
+
+PHASE 6 — Tests, CI, Docker, docs
+  Goal: prove it works and make it reproducible.
+  Tasks:
+    - pytest suite across detection/api/auth/rate-limit (target meaningful cover).
+    - Dockerfile (multi-stage) + .env.example finalised.
+    - GitHub Actions: lint + tests.
+    - Polish OpenAPI: tags, summaries, request/response examples; update README.
+  Done when: `docker compose up` runs the stack; CI is green.
+
+PHASE 7 — Frontend refresh
+  Goal: dashboard consumes the new API.
+  Tasks:
+    - Point calls to /api/v1 + send API key.
+    - Show predicted class, confidence, deciding model + version, per-class stats.
+  Done when: dashboard shows live multi-class threats end-to-end.
+
+
+------------------------------------------------------------------------------
+6. API SURFACE (v1) — target
+------------------------------------------------------------------------------
+  GET  /health                       liveness (open)
+  GET  /api/v1/stats                 summary counts by type/severity/status
+  GET  /api/v1/stats/model           model versions + metrics (which model, when)
+  POST /api/v1/analyze               classify a payload  -> verdict + class + conf
+  GET  /api/v1/threats               list logged threats
+  POST /api/v1/threats/{id}/block    block (authed)
+  POST /api/v1/threats/{id}/ignore   ignore (authed)
+  GET  /api/v1/config                read config (authed)
+  POST /api/v1/config                update config (authed)
+  GET  /api/v1/export                CSV report (authed)
+  POST /api/v1/demo/reset            wipe demo data (authed)
+  ANY  /api/v1/proxy/{path}          inline inspecting proxy
+  WS   /api/v1/ws                    live threat stream
+
+
+------------------------------------------------------------------------------
+7. HOW TO RUN (will be kept current as phases land)
+------------------------------------------------------------------------------
+  Backend (dev):
+      cd backend
+      pip install -r requirements.txt
+      uvicorn app.main:app --reload          (after Phase 0; today it is main:app)
+      -> open http://localhost:8000/docs     (Swagger UI)
+
+  Training (only when rebuilding models):
+      cd backend
+      pip install -r requirements-ml.txt
+      python ml_training/data/build_dataset.py
+      python ml_training/train_classical.py
+      python ml_training/train_transformer.py
+
+  Frontend:
+      cd frontend
+      npm install
+      npm run dev      -> http://localhost:5173
+
+  Full stack (after Phase 6):
+      docker compose up
+
+
+------------------------------------------------------------------------------
+8. WHAT HAPPENS NEXT
+------------------------------------------------------------------------------
+  >> Next action: begin PHASE 0 + PHASE 1 (scaffolding + API restructure +
+     auth + real client IP + error handling).
+  >> Nothing in app code is changed yet — this turn produced the plan only.
+  >> To start, tell me: "start phase 1"  (or "start" to go straight through).
+  >> I will update section 7 and PROJECT_PLAN.md statuses as each phase lands,
+     and after each phase I will give you the exact commands to run and what you
+     should see.
+==============================================================================

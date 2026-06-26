@@ -1,0 +1,60 @@
+AI CYBER SECURITY THREAT DETECTOR (ACSTD) — TECHNOLOGIES USED
+=============================================================
+
+BACKEND (Python)
+----------------
+- Python 3.11
+- FastAPI            - web framework / REST API + WebSocket server
+- Uvicorn            - ASGI server that runs the app
+- SQLite             - database (threats.db) for storing threats & blocked IPs
+- scikit-learn       - machine learning model for threat classification
+- pandas             - reading/handling the training dataset
+- httpx              - forwarding safe requests in the proxy
+- python-dotenv      - loading settings from the .env file
+
+FRONTEND (JavaScript)
+---------------------
+- React 18           - UI library for the dashboard
+- Vite 5             - build tool / dev server
+- Tailwind CSS 3     - styling
+- PostCSS + Autoprefixer - CSS processing
+- Recharts           - charts / graphs for threat stats
+- Framer Motion      - animations
+- @vitejs/plugin-react - React support in Vite
+
+REAL-TIME
+---------
+- WebSockets (via FastAPI) - pushes detected threats live to the dashboard
+
+DETECTION
+---------
+- Signature rules    - regex/keyword matching (detection.py)
+- ML model           - trained classifier (model.pkl) for anomalous payloads
+- Rate limiting      - in-memory brute-force / rate-abuse detection
+
+THREAT TYPES DETECTED
+---------------------
+- SQL injection
+- Cross-Site Scripting (XSS)
+- Path traversal
+- Command injection
+- Suspicious user-agents
+- Brute-force / rate abuse
+
+KEY FILES
+---------
+backend/main.py            - API endpoints, WebSocket, proxy, rate limiting
+backend/detection.py       - signature-based threat rules
+backend/ml_model.py        - loads & runs the ML model
+backend/train.py           - trains the ML model from the dataset
+backend/database.py        - SQLite setup and queries
+backend/simulate_traffic.py- generates demo traffic
+backend/data/sqli_dataset.csv - training data
+frontend/src/pages/Dashboard.jsx - main dashboard UI
+
+HOW TO RUN
+----------
+Backend:   cd backend  ->  pip install -r requirements.txt  ->  uvicorn main:app --reload
+           (runs on http://localhost:8000)
+Frontend:  cd frontend ->  npm install  ->  npm run dev
+           (runs on http://localhost:5173)

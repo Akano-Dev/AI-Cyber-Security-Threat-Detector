@@ -1,0 +1,41 @@
+# Local production-like stack for ACSTD.
+#
+#   docker compose up --build
+#
+# Browse: dashboard http://localhost:5173 · API http://localhost:8000/docs
+#         demo site (via proxy) http://localhost:8000/api/v1/proxy/login?demo=true
+#
+# Note: the dashboard bundle targets http://localhost:8000 (see frontend/src/api.js),
+# so the backend is published on host port 8000 to match. For a REMOTE deployment
+# that hard-coded host must become configurable first — see PRODUCTION_CHECKLIST.md.
+
+services:
+  backend:
+    build: ./backend
+    image: acstd-backend
+    ports:
+      - "8000:7860"          # host 8000 -> container 7860 (matches api.js)
+    environment:
+      PORT: "7860"
+      API_KEY: "${API_KEY:-acstd-dev-key}"
+      TARGET_URL: "http://demo:8090"
+      # CORS must list the dashboard origin (default already allows :5173)
+      # CORS_ORIGINS: '["http://localhost:5173"]'
+    restart: unless-stopped
+
+  demo:
+    build: ./backend
+    image: acstd-backend
+    command: python demo_site.py
+    ports:
+      - "8090:8090"
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    image: acstd-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped

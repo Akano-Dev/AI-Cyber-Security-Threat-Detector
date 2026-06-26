@@ -4,3 +4,5 @@ scikit-learn
 pandas
 httpx
 python-dotenv
+pydantic-settings
+pytest

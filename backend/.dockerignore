@@ -1,0 +1,21 @@
+# Virtual envs & caches
+venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+
+# Local secrets & runtime artifacts (provided via env / regenerated at build)
+.env
+*.db
+*.sqlite3
+
+# Tests are not needed in the runtime image
+tests/
+
+# Generated ML extras (the API uses model.pkl only)
+data/multiclass_dataset.csv
+model_multiclass.pkl
+metrics_multiclass.json
+feature_importance.json
